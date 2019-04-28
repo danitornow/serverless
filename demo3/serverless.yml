@@ -57,9 +57,33 @@ functions:
       - http:
           path: create
           method: post
+          cors: true
     environment:
       REGION: ${opt:region, self:provider.region}
       DYNAMO: !Ref DemoDynamoDbTable
+
+  update:
+    handler: lib/update.Update.handler
+    events:
+      - http:
+          path: update/{uuid}
+          method: put
+          cors: true
+    environment:
+      REGION: ${opt:region, self:provider.region}
+      DYNAMO: !Ref DemoDynamoDbTable
+
+  delete:
+    handler: lib/delete.Delete.handler
+    events:
+      - http:
+          path: delete/{uuid}
+          method: delete
+          cors: true
+    environment:
+      REGION: ${opt:region, self:provider.region}
+      DYNAMO: !Ref DemoDynamoDbTable
+
 
 #    Define function environment variables here
 #    environment:
