@@ -37,6 +37,7 @@ module Create
     rescue StandardError => e
       puts 'Could not parse JSON'
     end
+  end
 
   def params
     {
