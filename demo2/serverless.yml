@@ -53,13 +53,13 @@ provider:
 functions:
   create:
     handler: lib/create.Create.handler
-    environment:
-      REGION: ${opt:regoin, self:provider.region}
-      DYNAMODB: !Ref DemoDynamoDbTable
     events:
       - http:
           path: create
           method: post
+    environment:
+      REGION: ${opt:region, self:provider.region}
+      DYNAMO: !Ref DemoDynamoDbTable
 
 #    Define function environment variables here
 #    environment:

@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+git_source(:github) { |serverless| "https://github.com/#{danitornow/serverless}" }
+
+# I've included this gem to test dependency packaging for lambdas.
+#
+gem 'aws-sdk-dynamodb'
