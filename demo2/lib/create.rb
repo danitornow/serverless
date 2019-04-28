@@ -40,12 +40,7 @@ module Create
   end
 
   def extract_data(event)
-    begin
-      @body = JSON.parse(event['body'])
-    rescue StandardError => e
-      puts "Could not parse JSON, error #{e}"
-      raise StandardError
-    end
+    @body = JSON.parse(event['body'])
   end
 
   def params
@@ -64,10 +59,13 @@ module Create
       dynamo.put_item(params)
       puts 'Added entry: ' + uuid.to_s
       { statusCode: 200, body: JSON.generate("Entry created successfully. ID: #{uuid}") }
+    rescue StandardError => e
+      puts "Could not handle message, error #{e}"
+      { statusCode: 500, body: JSON.generate('Your message is bad. Expected JSON') }
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       puts 'Unable to add item: ' + uuid.to_s
       puts error.message
-      { statusCode: 500, body: JSON.generate(':( It failed! ') }
+      { statusCode: 500, body: JSON.generate('Could not insert entry. Oopsie.') }
     end
   end
 end
