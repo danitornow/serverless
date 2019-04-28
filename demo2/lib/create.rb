@@ -6,14 +6,11 @@ require 'date'
 module Create
   module_function
 
-  @uuid = SecureRandom.uuid
+  @uuid
+  @body
 
   def dynamo
     Aws::DynamoDB::Client.new(region: ENV['REGION'])
-  end
-
-  def uuid
-    @uuid
   end
 
   def now
@@ -23,19 +20,31 @@ module Create
   def item
     {
       id: uuid,
-      data: ' Big New Movie',
+      data: body,
         info: {
-          plot: 'Nothing happens at all.',
-          timestamp: date
+          timestamp: now
         }
     }
   end
 
-  def data
+  def uuid
+    @uuid
+  end
+
+  def set_uuid
+    @uuid = SecureRandom.uuid
+  end
+
+  def body
+    @body
+  end
+
+  def extract_data(event)
     begin
-      msg = message(JSON.parse(event['body']))
+      @body = JSON.parse(event['body'])
     rescue StandardError => e
-      puts 'Could not parse JSON'
+      puts "Could not parse JSON, error #{e}"
+      raise StandardError
     end
   end
 
@@ -47,15 +56,18 @@ module Create
   end
 
   def handler(event:, context:)
-    puts event.inspect
+    #when you have to see the whole message:
+    #puts event.inspect
     begin
+      set_uuid
+      extract_data(event)
       dynamo.put_item(params)
       puts 'Added entry: ' + uuid.to_s
-      { statusCode: 200, body: JSON.generate('Entry created successfully') }
+      { statusCode: 200, body: JSON.generate("Entry created successfully. ID: #{uuid}") }
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       puts 'Unable to add item: ' + uuid.to_s
       puts error.message
-      { statusCode: 500, body: JSON.generate('It failed! :(') }
+      { statusCode: 500, body: JSON.generate(':( It failed! ') }
     end
   end
 end
