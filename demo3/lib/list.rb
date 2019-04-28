@@ -45,7 +45,7 @@ module Create
 
   def params
     {
-        table_name: ENV['DYNAMODB_TABLE'],
+        table_name: ENV['DYNAMO'],
         item: item
     }
   end

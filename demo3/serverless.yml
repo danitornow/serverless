@@ -26,6 +26,7 @@ provider:
   region: us-east-2
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    REGION: ${opt:region, self:provider.region}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -58,9 +59,6 @@ functions:
           path: create
           method: post
           cors: true
-    environment:
-      REGION: ${opt:region, self:provider.region}
-      DYNAMO: !Ref DemoDynamoDbTable
 
   update:
     handler: lib/update.Update.handler
@@ -69,9 +67,6 @@ functions:
           path: update/{uuid}
           method: put
           cors: true
-    environment:
-      REGION: ${opt:region, self:provider.region}
-      DYNAMO: !Ref DemoDynamoDbTable
 
   delete:
     handler: lib/delete.Delete.handler
@@ -80,11 +75,22 @@ functions:
           path: delete/{uuid}
           method: delete
           cors: true
-    environment:
-      REGION: ${opt:region, self:provider.region}
-      DYNAMO: !Ref DemoDynamoDbTable
 
+  list:
+    handler: lib/list.List.handler
+    events:
+      - http:
+          path: list
+          method: get
+          cors: true
 
+  get:
+    handler: lib/get.Get.handler
+    events:
+      - http:
+          path: list/{id}
+          method: get
+          cors: true
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
