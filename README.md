@@ -8,3 +8,5 @@ Features:
 - More API endpoints and a Dynamo DB
 - Uses Ruby 2.5
 - Might be full of unicorn power
+
+Slides: https://slides.com/danitornow/serverless-framework
