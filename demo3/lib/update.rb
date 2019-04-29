@@ -1,9 +1,7 @@
 require 'aws-sdk-dynamodb'
 require 'json'
-require 'securerandom'
-require 'date'
 
-module Create
+module Update
   module_function
 
   @uuid
@@ -13,26 +11,8 @@ module Create
     Aws::DynamoDB::Client.new(region: ENV['REGION'])
   end
 
-  def now
-    DateTime.now.strftime('%Y%m%dT%H%M%S%LZ')
-  end
-
-  def item
-    {
-      id: uuid,
-      data: body,
-        info: {
-          timestamp: now
-        }
-    }
-  end
-
   def uuid
     @uuid
-  end
-
-  def set_uuid
-    @uuid = SecureRandom.uuid
   end
 
   def body
@@ -40,13 +20,19 @@ module Create
   end
 
   def extract_data(event)
+    @uuid = event['pathParameters']['uuid']
     @body = JSON.parse(event['body'])
   end
 
   def params
     {
-        table_name: ENV['DYNAMO'],
-        item: item
+      table_name: ENV['DYNAMODB_TABLE'],
+      key: {
+        id: uuid
+      },
+      update_expression: 'set info.status_update = :s',
+      expression_attribute_values: {':s' => body['status'].to_s},
+      return_values: 'UPDATED_NEW'
     }
   end
 
@@ -54,14 +40,14 @@ module Create
     #when you have to see the whole message:
     #puts event.inspect
     begin
-      set_uuid
-      extract_data(event)
-      dynamo.put_item(params)
-      puts 'Added entry: ' + uuid.to_s
-      { statusCode: 200, body: JSON.generate("Entry created successfully. ID: #{uuid}") }
+      p extract_data(event)
+      p params
+      p dynamo.update_item(params)
+      puts 'Updated entry: ' + uuid.to_s
+      { statusCode: 200, body: JSON.generate("Entry updated successfully. ID: #{uuid}") }
     rescue StandardError => e
       puts "Could not handle message, error #{e}"
-      { statusCode: 500, body: JSON.generate('Your message is bad. Expected JSON') }
+      { statusCode: 500, body: JSON.generate('Your message is bad. Did you include a JSON with status?') }
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       puts 'Unable to add item: ' + uuid.to_s
       puts error.message
