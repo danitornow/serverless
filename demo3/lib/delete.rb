@@ -3,7 +3,7 @@ require 'json'
 require 'securerandom'
 require 'date'
 
-module Create
+module Delete
   module_function
 
   @uuid
@@ -13,40 +13,20 @@ module Create
     Aws::DynamoDB::Client.new(region: ENV['REGION'])
   end
 
-  def now
-    DateTime.now.strftime('%Y%m%dT%H%M%S%LZ')
-  end
-
-  def item
-    {
-      id: uuid,
-      data: body,
-        info: {
-          timestamp: now
-        }
-    }
-  end
-
   def uuid
     @uuid
   end
 
-  def set_uuid
-    @uuid = SecureRandom.uuid
-  end
-
-  def body
-    @body
-  end
-
   def extract_data(event)
-    @body = JSON.parse(event['body'])
+    @uuid = event['pathParameters']['uuid']
   end
 
   def params
     {
-        table_name: ENV['DYNAMO'],
-        item: item
+      table_name: ENV['DYNAMODB_TABLE'],
+      key: {
+        id: uuid
+      }
     }
   end
 
@@ -54,18 +34,18 @@ module Create
     #when you have to see the whole message:
     #puts event.inspect
     begin
-      set_uuid
       extract_data(event)
-      dynamo.put_item(params)
-      puts 'Added entry: ' + uuid.to_s
-      { statusCode: 200, body: JSON.generate("Entry created successfully. ID: #{uuid}") }
+      p params
+      dynamo.delete_item(params)
+      puts 'Deleted entry: ' + uuid.to_s
+      { statusCode: 200, body: JSON.generate("Entry deleted successfully. ID: #{uuid}") }
     rescue StandardError => e
       puts "Could not handle message, error #{e}"
-      { statusCode: 500, body: JSON.generate('Your message is bad. Expected JSON') }
+      { statusCode: 500, body: JSON.generate('Your message is bad. Is your uuid correct?') }
     rescue  Aws::DynamoDB::Errors::ServiceError => error
-      puts 'Unable to add item: ' + uuid.to_s
+      puts 'Unable to delete item: ' + uuid.to_s
       puts error.message
-      { statusCode: 500, body: JSON.generate('Could not insert entry. Oopsie.') }
+      { statusCode: 500, body: JSON.generate('Could not delete entry. Oopsie.') }
     end
   end
 end
