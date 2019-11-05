@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'access_keys'
 require 'json'
 require 'base64'
 
@@ -21,7 +20,7 @@ module Authorizer
       username = plain_creds[0]
       pwd = plain_creds[-1]
 
-      if username == ret_secrets[@@username] && pwd == ret_secrets[@@password]
+      if username == 'demo' && pwd == 'demo12345'
         puts 'Authorization Success'
         build_policy(event, username, 'Allow')
       else

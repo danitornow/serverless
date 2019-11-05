@@ -58,7 +58,8 @@ functions:
       - http:
           path: create
           method: post
-          cors: true
+          cors: false
+          authorizer: basicAuth
 
   update:
     handler: lib/update.Update.handler
@@ -66,7 +67,8 @@ functions:
       - http:
           path: update/{uuid}
           method: put
-          cors: true
+          cors: false
+          authorizer: basicAuth
 
   delete:
     handler: lib/delete.Delete.handler
@@ -74,7 +76,8 @@ functions:
       - http:
           path: delete/{uuid}
           method: delete
-          cors: true
+          cors: false
+          authorizer: basicAuth
 
   list:
     handler: lib/list.List.handler
@@ -82,7 +85,8 @@ functions:
       - http:
           path: list
           method: get
-          cors: true
+          cors: false
+          authorizer: basicAuth
 
   get:
     handler: lib/get.Get.handler
@@ -90,9 +94,10 @@ functions:
       - http:
           path: list/{id}
           method: get
-          cors: true
+          cors: false
+          authorizer: basicAuth
 
-  authorizer:
+  basicAuth:
     handler: lib/authorizer.Authorizer.authorizer_function
 #    Define function environment variables here
 #    environment:
